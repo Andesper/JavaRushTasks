@@ -16,62 +16,64 @@ public class Solution {
 
     static {
         allPeople.add(Person.createMale("Иванов Иван", new Date()));  //сегодня родился    id=0
-        allPeople.add(Person.createMale("Петров Петр", new Date()));  //сегодня родился    id=1
+        allPeople.add(Person.createFemale("Петров Петр", new Date()));  //сегодня родился    id=1
     }
 
-    public static void main(String[] args) throws ParseException {
-        //start here - начни тут
-        if(args.length > 0) {
-            String sex;
-            Date date;
-            int count = 1;
+    private static SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+    private static SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+
+    public static void main(String[] args) {
+
+        try {
             switch (args[0]) {
-                case ("-c")://add peoples
+                case "-c":
                     synchronized (allPeople) {
-                        for (int i = 1; i < args.length - 3; i += 3) {
-                            date = new SimpleDateFormat("d/MM/yyyy").parse(args[i + 2]);
-                            if (args[i + 1].equals("м")) {
-                                allPeople.add(Person.createMale(args[i], date));
-                            } else {
-                                allPeople.add(Person.createFemale(args[i], date));
-                            }
-                            count++;
-                            System.out.println(count);
+                        for (int i = 1; i < args.length; i = i + 3) {
+                            String name = args[i];
+                            String sex = args[i + 1];
+                            Date date = inputFormat.parse(args[i + 2]);
+                            Person person = sex.equals("м") ? Person.createMale(name, date) : Person.createFemale(name, date);
+                            allPeople.add(person);
+                            System.out.println(allPeople.indexOf(person));
                         }
                     }
                     break;
-                case("-u")://update peoples
+                case "-u":
                     synchronized (allPeople) {
-                        for (int i = 1; i < args.length - 4; i += 4) {
-                            date = new SimpleDateFormat("d/MM/yyyy").parse(args[i + 3]);
-                            if (args[i + 2].equals("male")) allPeople.get(Integer.parseInt(args[i])).setSex(Sex.MALE);
-                            else allPeople.get(Integer.parseInt(args[i])).setSex(Sex.FEMALE);
-                            allPeople.get(Integer.parseInt(args[i])).setName(args[i + 1]);
-                            allPeople.get(Integer.parseInt(args[i])).setBirthDate(date);
+                        for (int i = 1; i < args.length; i = i + 4) {
+                            int id = Integer.parseInt(args[i]);
+                            String name = args[i + 1];
+                            String sex = args[i + 2];
+                            Date date = inputFormat.parse(args[i + 3]);
+                            allPeople.get(id).setName(name);
+                            allPeople.get(id).setSex("м".equals(sex) ? Sex.MALE : Sex.FEMALE);
+                            allPeople.get(id).setBirthDate(date);
                         }
                     }
                     break;
-                        case ("-d"): //delete peoples
-                            synchronized (allPeople) {
-                                for (int i = 1; i < args.length; i++) {
-                                    allPeople.get(Integer.parseInt(args[i])).setSex(null);
-                                    allPeople.get(Integer.parseInt(args[i])).setName(null);
-                                    allPeople.get(Integer.parseInt(args[i])).setBirthDate(null);
-                                }
-                            }
-                            break;
-                    case ("-i")://print information
-                        synchronized (allPeople) {
-                            for (int i = 1; i < args.length; i++) {
-                                if (allPeople.get(Integer.parseInt(args[i])).getSex() == Sex.MALE) sex = "м";
-                                else sex = "ж";
-                                System.out.println(allPeople.get(Integer.parseInt(args[i])).getName() + " " + sex + " " + new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH).format(allPeople.get(Integer.parseInt(args[i])).getBirthDate()));
-                            }
+                case "-d":
+                    synchronized (allPeople) {
+                        for (int i = 1; i < args.length; i++) {
+                            allPeople.get(Integer.parseInt(args[i])).setName(null);
+                            allPeople.get(Integer.parseInt(args[i])).setSex(null);
+                            allPeople.get(Integer.parseInt(args[i])).setBirthDate(null);
                         }
-                        break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + args[0]);
+                    }
+                    break;
+                case "-i":
+                    synchronized (allPeople) {
+                        for (int i = 1; i < args.length; i++) {
+                            int id = Integer.parseInt(args[i]);
+                            Person person = allPeople.get(id);
+                            System.out.print(person.getName() + " ");
+                            System.out.print(person.getSex().equals(Sex.MALE) ? "м " : "ж ");
+                            System.out.println(outputFormat.format(person.getBirthDate()));
+                        }
+                    }
+                    break;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
